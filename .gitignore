@@ -9,5 +9,6 @@
 *.FCStd2
 *.FCBak
 test*.*
+*.step
 
 # End of https://www.toptal.com/developers/gitignore/api/freecad
