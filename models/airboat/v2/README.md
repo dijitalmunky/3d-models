@@ -29,3 +29,11 @@ Let's use the concept of stretch goals to set some other great features.
 - The overall pylon design seems strong.
 - Hull height seems okay, barring the initial planing issue.
 
+# Notes
+Control Rod - mid hull
+radius: 1.2mm
+Height: <<Params>>.WallThickness + <<Params>>.SealWidth + <<Params>>.InnerWallThickness + <<Params>>.DoveTailLength
+X-pos: <<Params>>.HullWidthHalved - <<Params>>.WallThickness - <<Params>>.SealWidth - <<Params>>.InnerWallThickness - <<Params>>.Tolerance - 20 mm
+Y-pos: -(<<Params>>.MidSectionLength / 2 - <<Params>>.WallThickness - <<Params>>.SealWidth - <<Params>>.InnerWallThickness)
+Z-Pos: <<Params>>.HullHeight - <<Params>>.PylonBasePlateThickness - <<Params>>.SealChannelHeight - 1.5 mm
+Around X-Axis: 90 deg
