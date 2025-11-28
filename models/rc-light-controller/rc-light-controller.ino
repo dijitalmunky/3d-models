@@ -2,23 +2,23 @@
 #include <pt.h>  // Install "Protothreads" library
 
 // Pin definitions
-const int STEERING_PIN = 2;
-const int THROTTLE_PIN = 3;
-const int LIGHTING_PIN = 4;
+const byte STEERING_PIN = 2;
+const byte THROTTLE_PIN = 3;
+const byte LIGHTING_PIN = 4;
 
-const int RED_PIN = 9;
-const int GREEN_PIN = 10;
-const int BLUE_PIN = 11;
+const byte RED_PIN = 9;
+const byte GREEN_PIN = 10;
+const byte BLUE_PIN = 11;
 
-const int HEADLIGHT_PIN = 7;
-const int LEFT_TAILLIGHT_PIN = 5;
-const int RIGHT_TAILLIGHT_PIN = 6;
+const byte HEADLIGHT_PIN = 7;
+const byte LEFT_TAILLIGHT_PIN = 5;
+const byte RIGHT_TAILLIGHT_PIN = 6;
 
 // Timing parameters
-const unsigned long LIGHT_UPDATE_INTERVAL = 15;  // ms between updates
-const unsigned long SIGNAL_BLINK_INTERVAL = 500;  // ms between signal blinks
+const byte LIGHT_UPDATE_INTERVAL = 15;  // ms between updates
+const byte SIGNAL_BLINK_INTERVAL = 500;  // ms between signal blinks
 
-const int COLOR_STEP_SIZE = 1;                 // fade increment
+const byte COLOR_STEP_SIZE = 1;                 // fade increment
 
 // Protothread structure
 static struct pt receiverReadThread
@@ -28,22 +28,22 @@ static struct pt receiverReadThread
                , outputThread;
 
 // Color state
-int r = 0, g = 0, b = 0;
-int phase = 0;  // 0–5
+byte r = 0, g = 0, b = 0;
+byte phase = 0;  // 0–5
 unsigned long lastStepTime = 0;
 unsigned long lastHeadlightTime = 0;
 unsigned long lastTaillightTime = 0;
 
 //Rx input
-int leftSignal = false;
-int rightSignal = false;
-int brake = false;
+bool leftSignal = false;
+bool rightSignal = false;
+bool brake = false;
 
-const int ROCK_LIGHTS = 0b100;
-const int TAIL_LIGHTS = 0b010;
-const int HEAD_LIGHTS = 0b001;
+const byte ROCK_LIGHTS = 0b100;
+const byte TAIL_LIGHTS = 0b010;
+const byte HEAD_LIGHTS = 0b001;
 
-int lightMode = 0b000;  // bits, in orde of least signifact first are headlights, taillights, rock lights.
+byte lightMode = 0b000;  // bits, in order of least signifact first are headlights, taillights, rock lights.
 byte curLeftSignalValue = 0;
 byte curRightSignalValue = 0;
 
@@ -51,14 +51,14 @@ unsigned long lastPrintTime = 0;
 unsigned long lastSignalTime = 0;
 
 // Helper: write color (handles common anode)
-void setColor(int rVal, int gVal, int bVal) {
+void setColor(byte rVal, byte gVal, byte bVal) {
   analogWrite(RED_PIN, rVal);
   analogWrite(GREEN_PIN, gVal);
   analogWrite(BLUE_PIN, bVal);
 }
 
 // The non-blocking color cycle protothread
-static int rockLights(struct pt *pt) {
+static void rockLights(struct pt *pt) {
   PT_BEGIN(pt);
 
   while (true) {
@@ -124,7 +124,7 @@ static int rockLights(struct pt *pt) {
 }
 
 // The non-blocking headlights protothread
-static int headLights(struct pt *pt) {
+static void headLights(struct pt *pt) {
   PT_BEGIN(pt);
 
   while (true) {
@@ -140,27 +140,14 @@ static int headLights(struct pt *pt) {
 
   PT_END(pt);
 };
-
-static int blinkSignal(byte curVal, bool brakeOn) {
-  if (millis() - lastSignalTime >= SIGNAL_BLINK_INTERVAL) {
-    lastSignalTime = millis();
-    if (brakeOn) {
-        return curVal + 128;
-    } else {
-      return curVal + 256;
-    }
-  } else {
-    return curVal;
-  }
-} 
  
 
 // The non-blocking headlights protothread
-static int tailLights(struct pt *pt) {
+static void tailLights(struct pt *pt) {
   PT_BEGIN(pt);
 
   while (true) {
-    int curTime = millis();
+    unsigned long curTime = millis();
     PT_WAIT_UNTIL(pt, curTime - lastTaillightTime >= LIGHT_UPDATE_INTERVAL);
     lastTaillightTime = curTime;
 
@@ -213,16 +200,16 @@ static int tailLights(struct pt *pt) {
   PT_END(pt);
 }
 
-int readChannel(int channelInput, int defaultValue = 0){
-  int ch = pulseIn(channelInput, HIGH, 30000);
+short readChannel(byte channelInput, short defaultValue = 0){
+  short ch = pulseIn(channelInput, HIGH, 30000);
   if (ch < 100) return defaultValue;
   return map(ch, 1000, 2000, -100, 100);
 }
 
-static int readPins(struct pt *pt) {
+static void readPins(struct pt *pt) {
   PT_BEGIN(pt);
 
-  int steering = readChannel(STEERING_PIN);
+  short steering = readChannel(STEERING_PIN);
   if (steering < -50) {
     leftSignal = true;
     rightSignal = false;
@@ -234,14 +221,14 @@ static int readPins(struct pt *pt) {
     rightSignal = false;
   }
 
-  int throttle = readChannel(THROTTLE_PIN);
+  short throttle = readChannel(THROTTLE_PIN);
   if (throttle < -12) {
     brake = true;
   } else {
     brake = false;
   }
 
-  int lights = readChannel(LIGHTING_PIN, -100);
+  short lights = readChannel(LIGHTING_PIN, -100);
   if (lights < -50) {
     lightMode = 0b000;
   }
@@ -256,7 +243,7 @@ static int readPins(struct pt *pt) {
   PT_END(pt);
 }
 
-static int outputState (struct pt *pt, int steeringVal, int throttleVal, int lightVal) {
+static void outputState (struct pt *pt, short steeringVal, short throttleVal, short lightVal) {
   if (!Serial.availableForWrite()) return;
 
   PT_WAIT_UNTIL(pt, millis() - lastPrintTime >= 500);
@@ -310,5 +297,4 @@ void loop() {
   headLights(&headlightThread);
   tailLights(&taillightThread);
   rockLights(&rocklightThread);
-
 }
