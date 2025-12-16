@@ -6,13 +6,14 @@ const byte STEERING_PIN = 2;
 const byte THROTTLE_PIN = 3;
 const byte LIGHTING_PIN = 4;
 
+const byte LEFT_TAILLIGHT_PIN = 5;
+const byte RIGHT_TAILLIGHT_PIN = 6;
+const byte HEADLIGHT_PIN = 7;
+
 const byte RED_PIN = 9;
 const byte GREEN_PIN = 10;
 const byte BLUE_PIN = 11;
 
-const byte HEADLIGHT_PIN = 7;
-const byte LEFT_TAILLIGHT_PIN = 5;
-const byte RIGHT_TAILLIGHT_PIN = 6;
 
 // Timing parameters
 const byte LIGHT_UPDATE_INTERVAL = 15;  // ms between updates
